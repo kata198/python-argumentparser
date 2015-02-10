@@ -28,26 +28,26 @@ def parse(args)
 Example
 =======
 
-In [1]: from ArgumentParser import ArgumentParser
+    In [1]: from ArgumentParser import ArgumentParser
 
-In [2]: parser = ArgumentParser(['firstName', 'lastName', 'birthday'], \
-   ...:     ['f', 'l', 'b'], \
-   ...:     ['first-name', 'last-name', 'birthday'], \
-   ...:     ['--citizen'] \
-   ...: )
+    In [2]: parser = ArgumentParser(['firstName', 'lastName', 'birthday'], 
+       ...:     ['f', 'l', 'b'], 
+       ...:     ['first-name', 'last-name', 'birthday'], 
+       ...:     ['--citizen'] 
+       )
 
-In [3]: parser.parse('-f Tim --last-name=savannah --birthday 6/28'.split(' '))
-Out[3]:
-{'errors': [],
- 'result': {'--citizen': False,
-  'birthday': '6/28',
-  'firstName': 'Tim',
-  'lastName': 'savannah'},
- 'warnings': []}
+    In [3]: parser.parse('-f Tim --last-name=savannah --birthday 6/28'.split(' '))
+    Out[3]:
+    {'errors': [],
+      'result': {'--citizen': False,
+      'birthday': '6/28',
+      'firstName': 'Tim',
+      'lastName': 'savannah'},
+      'warnings': []}
 
-In [4]: parser.parse('-f Tim --last-name=savannah --citizen'.split(' '))
-Out[4]:
-{'errors': [],
- 'result': {'--citizen': True, 'firstName': 'Tim', 'lastName': 'savannah'},
- 'warnings': []}
-
+    In [4]: parser.parse('-f Tim --last-name=savannah --citizen'.split(' '))
+    Out[4]:
+    {'errors': [],
+     'result': {'--citizen': True, 'firstName': 'Tim', 'lastName': 'savannah'},
+     'warnings': []}
+ 
