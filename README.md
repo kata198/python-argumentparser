@@ -13,20 +13,24 @@ Constructor:
     @param longOptions  list<string>  - This is a list of long (--xyz val or --xyz= val) options. If no long option is available, use 'None'. Omit the leading --
     @param staticOptions list<string> - This is a list of static options (arguments that have meaning just being present, without taking an additional value).
                                                 Any members of this list will be present in the results of #parse, set to True is present, otherwise False.
+    @param allowOtherArguments <bool> default False - if False, consider non-specified arguments as errors. Regardless of value, unmatched params will be in 'unmatched' key of return value.
+
 
 Functions:
     def parse(args)
-    	parse - Parses provided arguments and returns information on them. If using sys.argv, omit the first argument.
+        parse - Parses provided arguments and returns information on them. If using sys.argv, omit the first argument.
 
-	@return - dict keys are
-				'result' => dictionary of result name->value
-				'errors'  => list of strings of errors or empty list
-				'warnings' => list of strings of warnings, or empty list
+    @return - dict keys are
+                'result' => dictionary of result name->value
+                'errors'  => list of strings of errors or empty list
+                'warnings' => list of strings of warnings, or empty list
+                'unmatched' => list of strings of unmatched params, in order
 
 
 
 Example
 =======
+
 
     In [1]: from ArgumentParser import ArgumentParser
 
@@ -43,11 +47,26 @@ Example
       'birthday': '6/28',
       'firstName': 'Tim',
       'lastName': 'savannah'},
-      'warnings': []}
+      'warnings': [],
+      'unmatched' : []}
 
     In [4]: parser.parse('-f Tim --last-name=savannah --citizen'.split(' '))
     Out[4]:
     {'errors': [],
      'result': {'--citizen': True, 'firstName': 'Tim', 'lastName': 'savannah'},
-     'warnings': []}
- 
+     'warnings': [],
+     'unmatched': []}
+
+
+
+Example2
+========
+
+      >>> from ArgumentParser import ArgumentParser
+      >>> parser = ArgumentParser(['name'], ['n'], ['name'], None, False)
+      >>> parser.parse('-n hello some other args'.split(' '))
+      {'errors': ["Unknown argument 'some' (at position 2)", "Unknown argument 'other' (at position 3)", "Unknown argument 'args' (at position 4)"], 'result': {'name': 'hello'}, 'unmatched': ['some', 'other', 'args'], 'warnings': []}
+      >>> parser = ArgumentParser(['name'], ['n'], ['name'], None, True)
+      >>> parser.parse('-n hello some other args'.split(' '))
+      {'errors': [], 'result': {'name': 'hello'}, 'unmatched': ['some', 'other', 'args'], 'warnings': []}
+         

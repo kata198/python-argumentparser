@@ -12,6 +12,7 @@ class ArgumentParser(object):
 												Any members of this list will be present in the results of #parse, set to True is present, otherwise False.
 
 
+		@param allowOtherArguments <bool> default False - if False, consider non-specified arguments as errors.
 
 	    @example
 In [1]: from ArgumentParser import ArgumentParser
@@ -39,7 +40,7 @@ Out[4]:
 
 	'''
 
-	def __init__(self, names, shortOptions, longOptions, staticOptions=None):
+	def __init__(self, names, shortOptions, longOptions, staticOptions=None, allowOtherArguments=False):
 		namesLen = len(names)
 		if namesLen != len(shortOptions) or namesLen != len(longOptions):
 			raise ValueError('names, shortOptions, longOptions must all have the same length. use None of there is no equivlant.')
@@ -48,6 +49,7 @@ Out[4]:
 		self.shortOptions = shortOptions
 		self.longOptions = longOptions
 		self.staticOptions = staticOptions or []
+		self.allowOtherArguments = allowOtherArguments
 
 
 	def parse(self, args):
@@ -58,10 +60,12 @@ Out[4]:
 						'result' => dictionary of result name->value
 						'errors'  => list of strings of errors or empty list
 						'warnings' => list of strings of warnings, or empty list
+						'unmatched' => all unmatched params, in order
 		'''
 		result = {}
 		errors = []
 		warnings = []
+		unmatched = []
 		
 		argsLen = len(args)
 		i = 0
@@ -83,20 +87,20 @@ Out[4]:
 					equalSignIdx = False
 					argName = arg[2:]
 				try:
-					optionIdx = self.longOptions.index(argName)
+					argIdx = self.longOptions.index(argName)
 				except ValueError:
-					errors.append("Unknown option at '%s' (at position %d)" %(arg, i,))
+					errors.append("Unknown argument '%s' (at position %d)" %(arg, i,))
 					i += 1
 					continue
 				
-				name = self.names[optionIdx]
+				name = self.names[argIdx]
 				if name in result:
-					warnings.append("%s specified more than once. Using latter value (at position %d)" %(name, i))
+					warnings.append("Option '%s' specified more than once. Using latter value (at position %d)" %(name, i))
 
 				if equalSignIdx is not False:
 					val = arg[equalSignIdx+1:]
 					if len(val) == 0:
-						errors.append('Equal sign used and no value on %s (at position %d)' %(arg, i))
+						errors.append('Equal sign used and no value on \'%s\' (at position %d)' %(arg, i))
 						i += 1
 						continue
 					result[name] = val
@@ -104,7 +108,7 @@ Out[4]:
 					continue
 				else:
 					if i+1 >= argsLen:
-						errors.append('No equal sign provided on assignment option, and no more arguments to try at %s (at position %d)' %(arg, i))
+						errors.append('No equal sign provided on assignment option, and no more arguments to try with \'%s\' (at position %d)' %(arg, i))
 						i += 2
 						continue
 					val = args[i+1]
@@ -120,22 +124,26 @@ Out[4]:
 					continue
 				
 				try:
-					optionIdx = self.shortOptions.index(argName)
+					argIdx = self.shortOptions.index(argName)
 				except ValueError:
-					errors.append("Unknown option at position '%s' (at position %d)" %(arg, i))
+					errors.append("Unknown option '%s' (at position %d)" %(arg, i))
 					i += 1
 					continue
 
-				name = self.names[optionIdx]
+				name = self.names[argIdx]
 				if name in result:
-					warnings.append("%s specified more than once, using latter value (at position %d)" %(name, i))
+					warnings.append("Argument \'%s\' specified more than once, using latter value (at position %d)" %(name, i))
 
 				result[name] = args[i+1]
 				i += 2
 				continue
 			
 			else:
-				errors.append('Unknown argument %s (at position %d)' %(arg, i))
+				if self.allowOtherArguments is False:
+					errors.append('Unknown argument \'%s\' (at position %d)' %(arg, i))
+
+				unmatched.append(arg)
+					
 				i += 1
 				continue
 
@@ -143,7 +151,7 @@ Out[4]:
 			if staticOption not in result:
 				result[staticOption] = False
 		
-		return { 'result' : result, 'errors' : errors, 'warnings' : warnings }
+		return { 'result' : result, 'errors' : errors, 'warnings' : warnings, 'unmatched' : unmatched }
 
 				
 				
