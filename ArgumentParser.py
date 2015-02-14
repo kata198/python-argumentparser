@@ -1,5 +1,5 @@
-# Copyright 2015 (c) Tim Savannah
-# GPL License
+# Copyright 2015 (c) Tim Savannah <kata198@gmail.com>
+# GPL v3 (see LICENSE file). Feel free to contact me with any questions!
 
 import sys
 
