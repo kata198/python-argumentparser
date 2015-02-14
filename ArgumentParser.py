@@ -1,6 +1,8 @@
 # Copyright 2015 (c) Tim Savannah
 # GPL License
 
+import sys
+
 class ArgumentParser(object):
 	'''
 		A utility class for parsing command-line arguments.
@@ -48,13 +50,16 @@ Out[4]:
 		self.names = names
 		self.shortOptions = shortOptions
 		self.longOptions = longOptions
-		self.staticOptions = staticOptions or []
+		self.staticOptions = set(staticOptions or [])
 		self.allowOtherArguments = allowOtherArguments
 
 
-	def parse(self, args):
+	def parse(self, args=None):
 		'''
 			parse - Parses provided arguments and returns information on them. If using sys.argv, omit the first argument.
+						If dealing with a string of arguments (custom shell or something?), `shlex.parse('args "as expected" k')` is your friend.
+
+			@param args  list<string> - parse these arguments. If None (default), sys.argv[1:] is used.
 
 			@return - dict keys are
 						'result' => dictionary of result name->value
@@ -62,6 +67,8 @@ Out[4]:
 						'warnings' => list of strings of warnings, or empty list
 						'unmatched' => all unmatched params, in order
 		'''
+		if args is None:
+			args = sys.argv[1:]
 		result = {}
 		errors = []
 		warnings = []
