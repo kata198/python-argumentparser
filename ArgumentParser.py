@@ -11,7 +11,7 @@ class ArgumentParser(object):
 		@param staticOptions list<string> - This is a list of static options (arguments that have meaning just being present, without taking an additional value).
 												Any members of this list will be present in the results of #parse, set to True is present, otherwise False.
 
-
+        @param multipleStaticOptions <dict> - A dictionary for multiple static arguments that resolve to one value. Key is the "name", values are all potential values. Ex: {'cheese' : ['--cheddar', 'gouda'] } presence of either 'gouda' or '--cheddar' in results would set cheese to True, otherwise False.
 		@param allowOtherArguments <bool> default False - if False, consider non-specified arguments as errors.
 
 	    @example
@@ -38,9 +38,14 @@ Out[4]:
  'result': {'--citizen': True, 'firstName': 'Tim', 'lastName': 'savannah'},
  'warnings': []}
 
+>>> import ArgumentParser
+>>> parser = ArgumentParser.ArgumentParser( ('one', 'two'), ('o', 't'), ('uno', 'dos'), ('x'), {'cheese' : ['cheddar', 'gouda'], 'baby' : {'child', 'infant'}} )
+>>> parser.parse(['-o', '1', 'cheddar'])
+{'errors': [], 'result': {'baby': False, 'cheese': True, 'x': False, 'one': '1'}, 'unmatched': [], 'warnings': []}
+
 	'''
 
-	def __init__(self, names, shortOptions, longOptions, staticOptions=None, allowOtherArguments=False):
+	def __init__(self, names, shortOptions, longOptions, staticOptions=None, multipleStaticOptions=None, allowOtherArguments=False):
 		namesLen = len(names)
 		if namesLen != len(shortOptions) or namesLen != len(longOptions):
 			raise ValueError('names, shortOptions, longOptions must all have the same length. use None of there is no equivlant.')
@@ -49,6 +54,7 @@ Out[4]:
 		self.shortOptions = shortOptions
 		self.longOptions = longOptions
 		self.staticOptions = staticOptions or []
+		self.multipleStaticOptions = multipleStaticOptions
 		self.allowOtherArguments = allowOtherArguments
 
 
@@ -71,6 +77,21 @@ Out[4]:
 		i = 0
 		while i < argsLen:
 			arg = args[i]
+
+			if self.multipleStaticOptions is not None:
+				foundIt = False
+				for optionName, possibleValues in self.multipleStaticOptions.items():
+					if arg in possibleValues:
+						if optionName in result:
+							warnings.append("Argument '%s' specified more than once (at position %d)" %(arg, i))
+						else:
+							result[optionName] = True
+						foundIt = True
+						break
+				if foundIt is True:
+					i += 1
+					continue
+							
 			if arg in self.staticOptions:
 				if arg in result:
 					warnings.append("Argument '%s' specified more than once (at position %d)" %(arg, i))
@@ -150,6 +171,13 @@ Out[4]:
 		for staticOption in self.staticOptions:
 			if staticOption not in result:
 				result[staticOption] = False
+
+		if self.multipleStaticOptions is not None:
+			foundItems = set(result.keys())
+			multipleOptions = set(self.multipleStaticOptions.keys())
+
+			for optionName in multipleOptions.difference(foundItems):
+				result[optionName] = False
 		
 		return { 'result' : result, 'errors' : errors, 'warnings' : warnings, 'unmatched' : unmatched }
 
