@@ -18,6 +18,7 @@ Constructor:
 
 
 Functions:
+
     def parse(args)
         parse - Parses provided arguments and returns information on them. If using sys.argv, omit the first argument.
 
